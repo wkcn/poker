@@ -18,12 +18,25 @@ bool haveCard(const vector<Card> &v, const Card &c) {
 	return false;
 }
 
+int eraseCard(vector<Card> &v, const Card &c) {
+	for (int i = 0; i < v.size(); ++i) {
+		if (c == v[i]) {
+			v[i] = v[(int)v.size()-1];
+			v.erase(v.end()-1, v.end());		
+			return 1;
+		}
+	}	
+	return 0;
+}
 
 void Judge::run() {
 	#define PB push_back
 	#define INF 0x3f3f3f3f
 	#define DECK_LIM 52
 	#define MP make_pair
+
+	//变量申请
+	vector<bool > foul;
 
 	//初始化一堆牌
 	Card deck[DECK_LIM];
@@ -34,6 +47,7 @@ void Judge::run() {
 
 	//初始化四(n)位玩家所有信息
 	for (int i = 0; i < players.size(); ++i) {
+		foul.PB(false);
 		levels.PB(2);
 		historyTurn.PB(vector<pair<Card, int> > () );	
 		handCards.PB(vector<Card> () );
@@ -50,6 +64,7 @@ void Judge::run() {
 	//变量初始化
 		historyTurn.clear();
 		for (int i = 0; i < players.size(); ++i) {
+			foul[i] = false;
 			scores[i] = 0;
 			handCards[i].clear();
 		}
@@ -71,7 +86,7 @@ void Judge::run() {
 					if (!haveCard(handCards[p], needCard)) {
 						//记录犯规
 						cout << " player " << p << " foul in askMainCard, (S)He call (" << level << ", " << s << ") but (S)He hasn't!!" << endl;
-						scores[p] = -INF;
+						foul[p] = true;
 					}
 					else {
 						askingMainCard = false;
@@ -80,6 +95,8 @@ void Judge::run() {
 						if (banker == -1) {
 							banker = p;
 						}
+						//以叫主牌方开始
+						startPlayer = p;
 					}
 				}
 			}
@@ -88,15 +105,32 @@ void Judge::run() {
 	//游戏运行阶段
 		cout << "======================================" << endl;
 		cout << "The game start" << endl;
-		//第一轮庄家先开始，以后以上轮赢家开始（其实也就是当轮庄家）
-		if (startPlayer == -1) startPlayer = banker;
+
 		int turn = 0;
 		for (int p = startPlayer; handCards[p].size();) {
+			//第turn轮开始，创建记录
 			historyTurn.PB(vector<pair<Card, int> > () );
+
+			//轮流出牌
 			for (int tim = 0; tim < players.size(); ++tim, p = (p+1)%players.size()) {
 				Card nowCard = players[p]->discard();
-				historyTurn[turn].PB(MP(checkAndErase(p, handCards[p], nowCard), p));
+				if (!haveCard(handCards[p], nowCard)) {
+					//如果没有该手牌，犯规！
+					foul[p] = true;
+					//随机一张牌
+					nowCard = handCards[p][0];
+				}
+				else {
+					//没有犯规，出牌
+					//nowCard = nowCard;
+				}
+				historyTurn[turn].PB(MP(nowCard, p));
+				eraseCard(handCards[p], nowCard);
 			}
+
+			//结算该轮
+
+			++turn;
 		}
 
 	//结算阶段
@@ -105,18 +139,20 @@ void Judge::run() {
 
 		int maxx = -1, whoWin = -1;
 		for (int i = 0; i < players.size(); ++i) {
-			if (scores[i] < 0) {
+			if (foul[i]) {
 				cout << "The player " << i << " was fouled, (S)he's rank will decrease. " << endl; 
 				if (levels[i] > 2) --levels[i];
 			}
-			if (scores[i] > maxx) {
-				maxx = scores[i];
-				whoWin = i;
-			}
-			else if (scores[i] == maxx) {
-				if (whoWin == banker) ;
-				else if (i == banker) whoWin = i;
-				else whoWin = -1;
+			else {
+				if (scores[i] > maxx) {
+					maxx = scores[i];
+					whoWin = i;
+				}
+				else if (scores[i] == maxx) {
+					if (whoWin == banker) ;
+					else if (i == banker) whoWin = i;
+					else whoWin = -1;
+				}
 			}
 		}
 		if (whoWin != -1) {
