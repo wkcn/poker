@@ -203,6 +203,84 @@ int Judge::getId(Player* player){
 	return -1;
 } 
 
+
+/////////////////////////////////////////////////////////////////////XY part begin
+
+
+/*返回历史出牌 
+  返回值是一个(已经过的轮数*4)的二维向量,v[i][j]表示第i轮出的第j张牌,其中元素是pair类型,表示出的牌和出牌人的ID 
+  返回值不包括当前回合的出牌 
+ */
+vector<vector<pair<Card,int> > > Judge::getHistoryTurn(Player* player)
+{
+	return historyTurn;	
+}
+
+/*返回当前回合的出牌
+  向量里,元素按照出牌先后顺序排列 
+ */ 
+vector<pair<Card,int> > Judge::getCurrentTurn(Player* player)
+{
+	return currentTurn;	
+}
+
+/*返回当前手牌 
+  手牌没有某种固定的顺序,有必要时玩家可以自己实现排序和分类 
+ */
+vector<Card> Judge::getCurrentCards(Player* player)
+{
+	for (int i=0;i<4;i++)
+		if (players[i]==player)
+			return handCards[i];	
+}
+
+/*返回各玩家拥有的分数牌 
+  返回值是一个二维向量,v[i][j]表示ID为i的玩家得到的第j张分数牌 
+ */ 
+vector<vector<Card> > Judge::getCurrentScoreCards(Player* player)
+{
+	return currentScoreCard;	
+}
+
+//返回当前级牌数字(庄家的级别) 
+int Judge::getCurrentLevel(Player* player)
+{
+	//for (int i=0;i<4;i++)
+	//	if (players[i]==player)
+	return level;	
+}
+
+/*返回所有玩家的分数
+  v[i]表示ID为i的玩家的分数 
+ */ 
+vector<int> Judge::getScore(Player* player)
+{
+	return scores;	
+}
+
+/*返回主牌 
+ */
+Card Judge::getMainCard(Player* player)
+{
+	return mainCard;	
+}
+/*返回庄家 
+ */
+int Judge::getBanker(Player* player)
+{
+	return banker;	
+}
+/*返回所有玩家的等级
+  v[i]表示ID为i的玩家的等级 
+ */
+vector<int> Judge::getLevel(Player* player)
+{
+	return levels;	
+}
+
+///////////////////////////////////////////////////XY part end
+
+
 //获取牌的级别, 数字越大代表级别越大
 int Judge::getCardLevel(Card card){
 	if (card == mainCard)return 4;
@@ -304,4 +382,4 @@ Card Judge::DisRightCard(Player *player){
 
 }
 //编译测试用
-int main() {}
+//int main() {}

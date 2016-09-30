@@ -140,6 +140,11 @@ private:
 	vector<int> levels;
 private:	
 	//每轮游戏信息 
+
+	//当前轮所处的牌，按出牌顺序递增	
+	vector<pair<Card,int> > currentTurn;//
+	//currentScoreCard[i][j] 表示第i位玩家第j张分数牌
+	vector<vector<Card> > currentScoreCard;
 	
 	//历史出牌 
 	vector<vector<pair<Card,int> > > historyTurn;
