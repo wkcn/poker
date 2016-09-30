@@ -128,7 +128,17 @@ void Judge::run() {
 				eraseCard(handCards[p], nowCard);
 			}
 
-			//结算该轮
+			//结算该轮,计算胜者
+			int winner = p = getTurnWinner(historyTurn[turn]);
+			//统计出现分数和
+			int sumScore = 0;
+			for (int i = 0; i < historyTurn[turn].size(); ++i) {
+				if (historyTurn[turn][i].first.number == 5) sumScore += 5; 
+				if (historyTurn[turn][i].first.number == 10) sumScore += 10;
+				if (historyTurn[turn][i].first.number == 13) sumScore += 10;
+			}
+			//累加得分
+			scores[winner] += sumScore;
 
 			++turn;
 		}
