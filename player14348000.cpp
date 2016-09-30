@@ -1,4 +1,5 @@
 #include"judge.h"
+#include <cstdlib>
 using namespace std;
 
 //这是一个玩家子类的样例 
@@ -40,7 +41,7 @@ Card Player14348000::discard(){
 	vector<pair<Card,int> > curCards=judge->getCurrentTurn(this);
 	//...(获取其他信息)
 	
-	return *myCards.begin();
+	return myCards[rand() % myCards.size()];
 	/*玩家通过以上方式获取决策所需的信息（具体需要获取什么根据不同决策方式而定）
 	玩家出牌必须符合规则，乱出牌时裁判会否认其选择并随机出一张其牌组中符合要求的牌，游戏结束后接受惩罚
 	玩家进行决策后，出一张牌 

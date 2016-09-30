@@ -1,4 +1,5 @@
 #include"judge.cpp"
+#include"player14348134.cpp"
 #include"player14348000.cpp"
 
 using namespace std;
@@ -6,12 +7,18 @@ using namespace std;
 //该代码至少需要实现裁判的函数后,才能编译 
 //以下是一个简略的例子 
 int main(){
-	Player14348000 players[4]; //四位玩家 
+	//freopen("test,txt", "w", stdout);
+	Player14348134 player1; //四位玩家 
+	Player14348000 player2;
+	Player14348000 player3;
+	Player14348000 player4;
 	vector<Player*> va;
 	int i;
 	
-	for(i=0;i<4;++i) 
-		va.push_back(players+i);
+	va.push_back(&player1);
+	va.push_back(&player2);
+	va.push_back(&player3);
+	va.push_back(&player4);
 		
 	Judge judge(va);  //裁判 
 	

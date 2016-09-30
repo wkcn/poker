@@ -53,6 +53,7 @@ void Judge::run() {
 		historyTurn.PB(vector<pair<Card, int> > () );	
 		handCards.PB(vector<Card> () );
 		scores.PB(0);
+		currentScoreCard.PB(vector<Card> ());
 	}
 
 	//初始化其他变量
@@ -68,11 +69,12 @@ void Judge::run() {
 			foul[i] = false;
 			scores[i] = 0;
 			handCards[i].clear();
+			currentScoreCard[i].clear();
 		}
 
 	//发牌 + 叫庄阶段
-		//确定级牌
-		level = levels[banker];
+	//确定级牌
+		level = banker == -1 ? 2 : levels[banker];
 		random_shuffle(deck, deck + DECK_LIM);	
 
 		bool askingMainCard = true;
@@ -102,29 +104,55 @@ void Judge::run() {
 				}
 			}
 		}
+
+		if (mainCard == Card(-1, -1)) {
+			mainCard = Card(level, 1);
+			for (int i = 0; i < players.size(); ++i){
+				if (haveCard(handCards[i], mainCard)){
+					startPlayer = i;
+					break;
+				}
+			}
+		}
+
+
+
 		cout << "fapai finish, the mainCard is " << mainCard.number << " " << mainCard.color << endl;
+		char c;
+		cin >> c;
 	//游戏运行阶段
 		cout << "======================================" << endl;
 		cout << "The game start" << endl;
 
 		int turn = 0;
+		//回合迭代
+		cout << handCards[0].size() << endl;
 		for (int p = startPlayer; handCards[p].size();) {
 			//第turn轮开始，创建记录
 			historyTurn.PB(vector<pair<Card, int> > () );
+			currentTurn.clear();
 
 			//轮流出牌
+			cout << "Turn " << turn << endl;
 			for (int tim = 0; tim < players.size(); ++tim, p = (p+1)%players.size()) {
 				Card nowCard = players[p]->discard();
-				if (!haveCard(handCards[p], nowCard)) {
+				if (!DiscardValid(players[p], nowCard)){
 					//如果没有该手牌，犯规！
 					foul[p] = true;
 					//随机一张牌
-					nowCard = handCards[p][0];
+					cout << p << "Error" << nowCard.number << " " << nowCard.color << endl;
+					for (Card c:handCards[p]){
+						cout << c.number << "=" << c.color << endl;
+					}	
+					nowCard = DisRightCard(players[p]);
 				}
 				else {
 					//没有犯规，出牌
 					//nowCard = nowCard;
 				}
+
+				currentTurn.PB(MP(nowCard, p));
+
 				historyTurn[turn].PB(MP(nowCard, p));
 				eraseCard(handCards[p], nowCard);
 			}
@@ -134,14 +162,35 @@ void Judge::run() {
 			//统计出现分数和
 			int sumScore = 0;
 			for (int i = 0; i < historyTurn[turn].size(); ++i) {
-				if (historyTurn[turn][i].first.number == 5) sumScore += 5; 
-				if (historyTurn[turn][i].first.number == 10) sumScore += 10;
-				if (historyTurn[turn][i].first.number == 13) sumScore += 10;
+				if (historyTurn[turn][i].first.number == 5) 
+				{
+					sumScore += 5; 
+					currentScoreCard[winner].PB(historyTurn[turn][i].first);
+				}	
+				if (historyTurn[turn][i].first.number == 10) {
+					sumScore += 10;
+					currentScoreCard[winner].PB(historyTurn[turn][i].first);
+				}
+				if (historyTurn[turn][i] .first.number == 13) {
+					sumScore += 10;
+					currentScoreCard[winner].PB(historyTurn[turn][i].first);
+				}
 			}
+
+			// historyTurn[turn][i]
+			cout << "=This Turn " << endl;
+			for (int j = 0;j < 4;++j){
+				pair<Card,int> p = historyTurn[turn][j];
+				cout << p.second << ": " << p.first.number << "(" << p.first.color << ")" << " ";
+			}
+			cout << endl;
+
 			//累加得分
 			scores[winner] += sumScore;
+			cout << "This Turn Winner " << winner << endl;	
 
 			++turn;
+
 		}
 
 	//结算阶段
@@ -171,12 +220,13 @@ void Judge::run() {
 			else banker = whoWin;
 			startPlayer = whoWin;
 			winners.PB(whoWin);
+			cout << "WhoWin " << whoWin << endl;
 		}
 		else {
 			winners.PB(-1);
 		//	continue;
 		}
-		system("pause");
+		//system("pause");
 	}
 
 	for (int i = 0; i < players.size(); ++i) {
@@ -193,7 +243,86 @@ void Judge::run() {
 	#undef DECK_LIM
 }
 
+////////////////////////////////////
 
+/////////////////////////////////////////////////////////////////////XY part begin
+
+
+/*返回历史出牌 
+  返回值是一个(已经过的轮数*4)的二维向量,v[i][j]表示第i轮出的第j张牌,其中元素是pair类型,表示出的牌和出牌人的ID 
+  返回值不包括当前回合的出牌 
+ */
+vector<vector<pair<Card,int> > > Judge::getHistoryTurn(Player* player)
+{
+	return historyTurn;	
+}
+
+/*返回当前回合的出牌
+  向量里,元素按照出牌先后顺序排列 
+ */ 
+vector<pair<Card,int> > Judge::getCurrentTurn(Player* player)
+{
+	return currentTurn;	
+}
+
+/*返回当前手牌 
+  手牌没有某种固定的顺序,有必要时玩家可以自己实现排序和分类 
+ */
+vector<Card> Judge::getCurrentCards(Player* player)
+{
+	for (int i=0;i<4;i++)
+		if (players[i]==player)
+			return handCards[i];	
+	return vector<Card>();
+}
+
+/*返回各玩家拥有的分数牌 
+  返回值是一个二维向量,v[i][j]表示ID为i的玩家得到的第j张分数牌 
+ */ 
+vector<vector<Card> > Judge::getCurrentScoreCards(Player* player)
+{
+	return currentScoreCard;	
+}
+
+//返回当前级牌数字(庄家的级别) 
+int Judge::getCurrentLevel(Player* player)
+{
+	//for (int i=0;i<4;i++)
+	//	if (players[i]==player)
+	return level;	
+}
+
+/*返回所有玩家的分数
+  v[i]表示ID为i的玩家的分数 
+ */ 
+vector<int> Judge::getScore(Player* player)
+{
+	return scores;	
+}
+
+/*返回主牌 
+ */
+Card Judge::getMainCard(Player* player)
+{
+	return mainCard;	
+}
+/*返回庄家 
+ */
+int Judge::getBanker(Player* player)
+{
+	return banker;	
+}
+/*返回所有玩家的等级
+  v[i]表示ID为i的玩家的等级 
+ */
+vector<int> Judge::getLevel(Player* player)
+{
+	return levels;	
+}
+
+///////////////////////////////////////////////////XY part end
+
+////////////////////////////////////
 //举例：玩家获取自己的编号（ID） 
 int Judge::getId(Player* player){
 	for(int i=0;i<4;++i)
@@ -247,6 +376,7 @@ int Judge::getTurnWinner(vector<pair<Card,int> > vp){
 }
 
 bool Judge::DiscardValid(Player *player, Card card){
+
 	vector<Card> handCards = getCurrentCards(player);
 	bool has = false;
 	for (size_t i = 0; i < handCards.size();++i){
@@ -257,18 +387,38 @@ bool Judge::DiscardValid(Player *player, Card card){
 	}
 	if (!has)return false;
 	vector<pair<Card,int> > turnCards = getCurrentTurn(player);
+	/*
+	cout << "DISCARDST" << endl;
+	for (auto c:turnCards){
+		cout << c.first.number << ":" << c.first.color << endl;
+	}
+	cout << "DISCARDEND" << endl;
+	*/
+
 	if (turnCards.empty())return true;
+
 	Card firstCard = turnCards[0].first;
 	Card mainCard = getMainCard(player);
+
 	int curColor = firstCard.color; 
 	if (firstCard.number == mainCard.number)curColor = mainCard.color;
+
 	int myColor = card.color;
 	if (card.number == mainCard.number)myColor = mainCard.color;
-	if (curColor == myColor)return true;
 
-	for (size_t i = 0; i < handCards.size();++i){
-		//有这种颜色, 但是不出!
-		if (handCards[i].color == curColor)return false;
+
+	if (myColor != curColor){
+		for (size_t i = 0; i < handCards.size();++i){
+			//有这种颜色, 但是不出!
+			int ncolor = handCards[i].color;
+			if (handCards[i].number == mainCard.number)ncolor = mainCard.color;
+			if (ncolor == curColor){
+				cout << "COCO" << endl;
+				if (!(handCards[i] == card)){
+					return false;
+				}
+			}
+		}
 	}
 	return true;
 }
@@ -303,5 +453,3 @@ Card Judge::DisRightCard(Player *player){
 	return vc[rand() % vc.size()];
 
 }
-//编译测试用
-int main() {}
