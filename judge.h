@@ -38,6 +38,12 @@ struct Card{
 	int number;
 	//花色(1:黑桃,2:红桃,3:梅花,4:方块) 
 	int color;
+	void print(){
+		const int flower[5] = {0,6,3,5,4};
+		string f[5] = {"","Spade","Hearts","Club","Diamond"};
+		cout << f[color] << "<";
+		cout << number << ">";
+	}
 };  
 
 class Player{

@@ -9,9 +9,9 @@ using namespace std;
 int main(){
 	//freopen("test,txt", "w", stdout);
 	Player14348134 player1; //四位玩家 
-	Player14348000 player2;
-	Player14348000 player3;
-	Player14348000 player4;
+	Player14348134 player2; //四位玩家 
+	Player14348134 player3; //四位玩家 
+	Player14348000 player4; //四位玩家 
 	vector<Player*> va;
 	int i;
 	

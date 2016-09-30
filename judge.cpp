@@ -117,9 +117,10 @@ void Judge::run() {
 
 
 
-		cout << "fapai finish, the mainCard is " << mainCard.number << " " << mainCard.color << endl;
-		char c;
-		cin >> c;
+		cout << "Discard finish, the mainCard is ";
+		mainCard.print();
+		cout << endl;
+		cout << "Press any press to start" << endl;
 	//游戏运行阶段
 		cout << "======================================" << endl;
 		cout << "The game start" << endl;
@@ -133,17 +134,16 @@ void Judge::run() {
 			currentTurn.clear();
 
 			//轮流出牌
-			cout << "Turn " << turn << endl;
+			cout << "Turn " << turn << " : ";
 			for (int tim = 0; tim < players.size(); ++tim, p = (p+1)%players.size()) {
 				Card nowCard = players[p]->discard();
 				if (!DiscardValid(players[p], nowCard)){
 					//如果没有该手牌，犯规！
 					foul[p] = true;
 					//随机一张牌
-					cout << p << "Error" << nowCard.number << " " << nowCard.color << endl;
-					for (Card c:handCards[p]){
-						cout << c.number << "=" << c.color << endl;
-					}	
+					cout << "Player" << p << " Error "; 
+					nowCard.print();
+					cout << endl;
 					nowCard = DisRightCard(players[p]);
 				}
 				else {
@@ -178,16 +178,17 @@ void Judge::run() {
 			}
 
 			// historyTurn[turn][i]
-			cout << "=This Turn " << endl;
 			for (int j = 0;j < 4;++j){
 				pair<Card,int> p = historyTurn[turn][j];
-				cout << p.second << ": " << p.first.number << "(" << p.first.color << ")" << " ";
+				cout << p.second << ": ";
+				p.first.print();
+				cout << "  ";
 			}
 			cout << endl;
 
 			//累加得分
 			scores[winner] += sumScore;
-			cout << "This Turn Winner " << winner << endl;	
+			//cout << "This Turn Winner " << winner << endl;	
 
 			++turn;
 
@@ -215,18 +216,21 @@ void Judge::run() {
 				}
 			}
 		}
+
+
 		if (whoWin != -1) {
 			if (whoWin == banker) levels[whoWin] ++;
 			else banker = whoWin;
 			startPlayer = whoWin;
 			winners.PB(whoWin);
-			cout << "WhoWin " << whoWin << endl;
 		}
 		else {
 			winners.PB(-1);
 		//	continue;
 		}
-		//system("pause");
+		for (int i = 0;i < players.size();++i){
+			cout << "Player" << i << " Level: " << levels[i] << endl;
+		}
 	}
 
 	for (int i = 0; i < players.size(); ++i) {
@@ -413,7 +417,6 @@ bool Judge::DiscardValid(Player *player, Card card){
 			int ncolor = handCards[i].color;
 			if (handCards[i].number == mainCard.number)ncolor = mainCard.color;
 			if (ncolor == curColor){
-				cout << "COCO" << endl;
 				if (!(handCards[i] == card)){
 					return false;
 				}
