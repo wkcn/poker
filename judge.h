@@ -157,6 +157,10 @@ private:
 	int getTurnWinner(vector<pair<Card,int> > vp);
 	int getCardLevel(Card card);
 	bool cmpCard2(Card card1, Card card2);
+	//判断当前出牌是否合法
+	bool DiscardValid(Player *player, Card card);
+	//随机出一张合法的牌
+	Card DisRightCard(Player *player);
 };
 
 #endif 

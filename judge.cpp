@@ -1,4 +1,5 @@
 #include"judge.h"
+#include <cstdlib>
 using namespace std; 
 
 //裁判的函数在这里实现
@@ -53,4 +54,62 @@ int Judge::getTurnWinner(vector<pair<Card,int> > vp){
 		}
 	}
 	return win;
+}
+
+bool Judge::DiscardValid(Player *player, Card card){
+	vector<Card> handCards = getCurrentCards(player);
+	bool has = false;
+	for (size_t i = 0; i < handCards.size();++i){
+		if (handCards[i] == card){
+			has = true;
+			break;
+		}
+	}
+	if (!has)return false;
+	vector<pair<Card,int> > turnCards = getCurrentTurn(player);
+	if (turnCards.empty())return true;
+	Card firstCard = turnCards[0].first;
+	Card mainCard = getMainCard(player);
+	int curColor = firstCard.color; 
+	if (firstCard.number == mainCard.number)curColor = mainCard.color;
+	int myColor = card.color;
+	if (card.number == mainCard.number)myColor = mainCard.color;
+	if (curColor == myColor)return true;
+
+	for (size_t i = 0; i < handCards.size();++i){
+		//有这种颜色, 但是不出!
+		if (handCards[i].color == curColor)return false;
+	}
+	return true;
+}
+
+Card Judge::DisRightCard(Player *player){
+	vector<Card> handCards = getCurrentCards(player);
+	vector<pair<Card,int> > turnCards = getCurrentTurn(player);
+	if (turnCards.empty()){
+		return handCards[rand() % handCards.size()];
+	}
+	vector<Card> vc;
+	int curColor = turnCards[0].first.color;
+	Card mainCard = getMainCard(player);
+	bool force = false;
+	//级牌变色
+	if (turnCards[0].first.number == mainCard.number)curColor = mainCard.color;
+	for (size_t i = 0;i < handCards.size();++i){
+		int myColor = handCards[i].color;
+		if (handCards[i].number == mainCard.number){
+			myColor = mainCard.color;
+		}
+		if (myColor == curColor){
+			force = true;
+			vc.push_back(handCards[i]);
+		}
+	}
+	if (!force){
+		for (size_t i = 0;i < handCards.size();++i){
+			vc.push_back(handCards[i]);
+		}
+	}
+	return vc[rand() % vc.size()];
+
 }
