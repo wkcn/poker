@@ -169,6 +169,10 @@ private:
 	//card1 比 card2 先出
 	//若card1 大于 card2, 则返回true
 	bool cmpCard2(Card card1, Card card2);
+	//判断当前出牌是否合法
+	bool DiscardValid(Player *player, Card card);
+	//随机出一张合法的牌
+	Card DisRightCard(Player *player);
 };
 
 #endif 
