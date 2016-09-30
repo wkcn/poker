@@ -33,7 +33,7 @@ struct Card{
 	Card(){}
 	Card(int n,int c):number(n),color(c){}
 	//判断两张牌是否相等 
-	bool operator==(const Card& c) { return number==c.number&&color==c.color; }
+	bool operator==(const Card& c) const { return number==c.number&&color==c.color; }
 	//数字(数字是数字,J是11,Q是12,K是13,A是14) 
 	int number;
 	//花色(1:黑桃,2:红桃,3:梅花,4:方块) 

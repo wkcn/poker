@@ -4,11 +4,20 @@ using namespace std;
 
 //裁判的函数在这里实现
 
+//检查游戏是否结束
 bool theGameNotEnd(const vector<int> &levels) {
 	for (int i = 0; i < levels.size(); ++i) 
 		if (levels[i] == 14) return false;
 	return true;
 }
+
+//检查牌堆v中是否有卡牌c
+bool haveCard(const vector<Card> &v, const Card &c) {
+	for (int i = 0; i < v.size(); ++i)
+		if (v[i] == c) return true;
+	return false;
+}
+
 
 void Judge::run() {
 	#define PB push_back
@@ -59,12 +68,7 @@ void Judge::run() {
 				if (s) {
 					//花色(1:黑桃,2:红桃,3:梅花,4:方块) 
 					Card needCard(level, s);
-					bool haveCard = false;
-					for (int i = 0; i < handCards[p].size(); ++i) 
-						if (needCard == handCards[p][i]) {
-							haveCard = true; break;
-						}
-					if (!haveCard) {
+					if (!haveCard(handCards[p], needCard)) {
 						//记录犯规
 						cout << " player " << p << " foul in askMainCard, (S)He call (" << level << ", " << s << ") but (S)He hasn't!!" << endl;
 						scores[p] = -INF;
@@ -90,7 +94,8 @@ void Judge::run() {
 		for (int p = startPlayer; handCards[p].size();) {
 			historyTurn.PB(vector<pair<Card, int> > () );
 			for (int tim = 0; tim < players.size(); ++tim, p = (p+1)%players.size()) {
-				
+				Card nowCard = players[p]->discard();
+				historyTurn[turn].PB(MP(checkAndErase(p, handCards[p], nowCard), p));
 			}
 		}
 
