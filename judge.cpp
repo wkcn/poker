@@ -1,7 +1,146 @@
 #include"judge.h"
+
 using namespace std; 
 
 //裁判的函数在这里实现
+
+bool theGameNotEnd(const vector<int> &levels) {
+	for (int i = 0; i < levels.size(); ++i) 
+		if (levels[i] == 14) return false;
+	return true;
+}
+
+void Judge::run() {
+	#define PB push_back
+	#define INF 0x3f3f3f3f
+	#define DECK_LIM 52
+	#define MP make_pair
+
+	//初始化一堆牌
+	Card deck[DECK_LIM];
+	for (int i = 0; i < DECK_LIM; ++i) {
+		deck[i].number = i % 13 + 2;
+		deck[i].color = i / 13 + 1;
+	}
+
+	//初始化四(n)位玩家所有信息
+	for (int i = 0; i < players.size(); ++i) {
+		levels.PB(2);
+		historyTurn.PB(vector<pair<Card, int> > () );	
+		handCards.PB(vector<Card> () );
+		scores.PB(0);
+	}
+
+	//初始化其他变量
+	level = 2; banker = -1; mainCard = Card(-1, -1);
+
+	int cntGame = 0, startPlayer = -1;
+
+	while (theGameNotEnd(levels)) {
+		++cntGame;
+	//变量初始化
+		historyTurn.clear();
+		for (int i = 0; i < players.size(); ++i) {
+			scores[i] = 0;
+			handCards[i].clear();
+		}
+
+	//发牌 + 叫庄阶段
+		//确定级牌
+		level = levels[banker];
+		random_shuffle(deck, deck + DECK_LIM);	
+
+		bool askingMainCard = true;
+
+		for (int t = 0, p = 0; t < DECK_LIM; ++t, p = (p+1)%players.size()) {
+			handCards[p].PB(deck[t]);
+			if (askingMainCard) {
+				int s = players[p]->askMainCard(handCards[p]);
+				if (s) {
+					//花色(1:黑桃,2:红桃,3:梅花,4:方块) 
+					Card needCard(level, s);
+					bool haveCard = false;
+					for (int i = 0; i < handCards[p].size(); ++i) 
+						if (needCard == handCards[p][i]) {
+							haveCard = true; break;
+						}
+					if (!haveCard) {
+						//记录犯规
+						cout << " player " << p << " foul in askMainCard, (S)He call (" << level << ", " << s << ") but (S)He hasn't!!" << endl;
+						scores[p] = -INF;
+					}
+					else {
+						askingMainCard = false;
+						//叫主牌成功，确定主牌
+						mainCard = needCard;
+						if (banker == -1) {
+							banker = p;
+						}
+					}
+				}
+			}
+		}
+		cout << "fapai finish, the mainCard is " << mainCard.number << " " << mainCard.color << endl;
+	//游戏运行阶段
+		cout << "======================================" << endl;
+		cout << "The game start" << endl;
+		//第一轮庄家先开始，以后以上轮赢家开始（其实也就是当轮庄家）
+		if (startPlayer == -1) startPlayer = banker;
+		int turn = 0;
+		for (int p = startPlayer; handCards[p].size();) {
+			historyTurn.PB(vector<pair<Card, int> > () );
+			for (int tim = 0; tim < players.size(); ++tim, p = (p+1)%players.size()) {
+				
+			}
+		}
+
+	//结算阶段
+		cout << "=====================================" << endl;
+		cout << "The " << cntGame << "th game finish, the result is:  " << endl;
+
+		int maxx = -1, whoWin = -1;
+		for (int i = 0; i < players.size(); ++i) {
+			if (scores[i] < 0) {
+				cout << "The player " << i << " was fouled, (S)he's rank will decrease. " << endl; 
+				if (levels[i] > 2) --levels[i];
+			}
+			if (scores[i] > maxx) {
+				maxx = scores[i];
+				whoWin = i;
+			}
+			else if (scores[i] == maxx) {
+				if (whoWin == banker) ;
+				else if (i == banker) whoWin = i;
+				else whoWin = -1;
+			}
+		}
+		if (whoWin != -1) {
+			if (whoWin == banker) levels[whoWin] ++;
+			else banker = whoWin;
+			startPlayer = whoWin;
+			winners.PB(whoWin);
+		}
+		else {
+			winners.PB(-1);
+		//	continue;
+		}
+		system("pause");
+	}
+
+	for (int i = 0; i < players.size(); ++i) {
+		if (levels[i] == 14) {
+			cout << "The final winner is players " << i << endl;
+			//需要为player加一个常量字符串
+//			cout << "(S)He's name is " << "" << endl;
+		}
+	}
+	
+	#undef PB
+	#undef INF
+	#undef MP
+	#undef DECK_LIM
+}
+
 
 //举例：玩家获取自己的编号（ID） 
 int Judge::getId(Player* player){
@@ -54,3 +193,6 @@ int Judge::getTurnWinner(vector<pair<Card,int> > vp){
 	}
 	return win;
 }
+
+//编译测试用
+int main() {}

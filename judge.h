@@ -154,8 +154,15 @@ private:
 	//庄家ID
 	int banker;
 private:
+	//获得一个回合(每人出一张牌)的胜者
+	//传入参数: 当前回合的出牌顺序(按出牌顺序排列), (Card, 出牌人ID)
+	//返回该回合的胜者
+	//假设传入的参数不违规
 	int getTurnWinner(vector<pair<Card,int> > vp);
+	//获取牌的级别, 数字越大代表级别越大
 	int getCardLevel(Card card);
+	//card1 比 card2 先出
+	//若card1 大于 card2, 则返回true
 	bool cmpCard2(Card card1, Card card2);
 };
 
